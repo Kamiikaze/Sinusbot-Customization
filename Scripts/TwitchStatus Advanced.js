@@ -134,7 +134,7 @@ registerPlugin({
 	var OfflineText = config.e_OfflineFormat;
 	
 	if (!DescHeader) {
-		DescHeader =	"[center][b][u][size=+4][COLOR=#00aa00]Unsere Streamer[/COLOR][/size][/u][/b][/center]\n\n";
+		DescHeader =	"[center][b][u][size=+4][COLOR=#00aa00]List of Streamers[/COLOR][/size][/u][/b][/center]\n\n";
 	} else {
 		DescHeader = config.c_OverviewHeader;
 	}
