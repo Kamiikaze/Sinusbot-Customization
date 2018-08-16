@@ -4,7 +4,13 @@ registerPlugin({
     description: 'Twitch Status Plugin with advanced Streamer-Overview.',
     author: 'Kamikaze <admin@xKamikaze.de>',
     vars: {
-		a_StreamerOverviewActive: {
+		a_TwitchClientID: {
+			title: 'First you need to create a ClientID. Register an App here >> https://dev.twitch.tv/dashboard/apps/create',
+			name: 'TwitchClientID',
+			indent: 0,
+			type: 'string'
+		},
+		aa_StreamerOverviewActive: {
 			title: 'Activate Streamer Overview?',
 			name: 'StreamerOverviewActive',
 			indent: 0,
@@ -16,11 +22,11 @@ registerPlugin({
 		},
 		b_StreamerOverviewChannel: {
 			title: 'Select Channel for Streamer Overview:',
-			name: 'StreamerOverviewActive',
+			name: 'StreamerOverviewChannel',
 			indent: 1,
 			type: 'channel',
 			conditions: [
-				{ field: 'StreamerOverviewActive', value: 0 }
+				{ field: 'aa_StreamerOverviewActive', value: 0 }
 			]
 		},
 		c_OverviewHeader: {
@@ -30,7 +36,7 @@ registerPlugin({
 			type: 'multiline',
 			placeholder: '[center][b][u][size=+4][COLOR=#00aa00]List of Streamers[/COLOR][/size][/u][/b][/center]\\n\\n',
 			conditions: [
-				{ field: 'StreamerOverviewActive', value: 0 }
+				{ field: 'aa_StreamerOverviewActive', value: 0 }
 			]
 		},
 		d_OnlineFormat: {
@@ -40,7 +46,7 @@ registerPlugin({
 			type: 'multiline',
 			placeholder: '[center][b][size=+2][COLOR=#00ff00]%user%[/COLOR][/size][/b][/center] \n[center][size=10][url=%url%]%title%[/url][/size] \n[COLOR=#ff5500]Playing [b]%game%[/b] \n[b]Viewer:[/b] %viewer% | [b]Follower:[/b] %follower%[/COLOR][/center] \n\n\n',
 			conditions: [
-				{ field: 'StreamerOverviewActive', value: 0 }
+				{ field: 'aa_StreamerOverviewActive', value: 0 }
 			]
 		},
 		e_OfflineFormat: {
@@ -50,7 +56,7 @@ registerPlugin({
 			type: 'multiline',
 			placeholder: '[center][b][size=+2][COLOR=#00ff00]%user%[/COLOR][/size][/b][/center] \n[center]Stream is currently offline! \n[url=%url%]>> Go to Channel[/url][/center] \\n\\n\\n',
 			conditions: [
-				{ field: 'StreamerOverviewActive', value: 0 }
+				{ field: 'aa_StreamerOverviewActive', value: 0 }
 			]
 		},
 		f_SuffixOrPrefix: {
@@ -115,10 +121,11 @@ registerPlugin({
 	var event = require('event')
 	var backend = require('backend')
 	
-	var SOactive = config.a_StreamerOverviewActive
+	var SOactive = config.aa_StreamerOverviewActive
 	var SOchannel = config.b_StreamerOverviewChannel
 	var Channel = backend.getChannelByID(SOchannel)
 	var TwitchArray = config.x_TwitchArrays
+	var TwitchClientID = config.a_TwitchClientID
 	var callbacks = 0
 	var msg = ""
 	
@@ -159,7 +166,7 @@ registerPlugin({
 					method: "GET",
 					url: "https://api.twitch.tv/kraken/streams/" + twitchUser + "?stream_type=live",
 					timeout: 60000,
-					headers: { "Client-ID": "09yqfi2m1ggvcumavhvql1j7mcadql" }
+					headers: { "Client-ID": TwitchClientID }
 				}, function (error, response) {
 					
 					var data = JSON.parse(response.data);
@@ -226,7 +233,7 @@ registerPlugin({
 					
 					var data = response.data
 					data = JSON.parse(data)
-						engine.log(config.f_SuffixOrPrefix)
+					//engine.log(config.f_SuffixOrPrefix)
 					if (!data.stream) {
 						//engine.log(TwitchUser + "Status is Offline")
 						if (config.f_SuffixOrPrefix == 0) {
