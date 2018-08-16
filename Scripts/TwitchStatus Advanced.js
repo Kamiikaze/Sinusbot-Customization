@@ -16,8 +16,8 @@ registerPlugin({
 			indent: 0,
 			type: 'select',
 			options: [
-				'Ja',
-				'Nein'
+				'Yes',
+				'No'
 			]
 		},
 		b_StreamerOverviewChannel: {
