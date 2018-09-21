@@ -282,6 +282,13 @@ registerPlugin({
 # \n\
 # + Added timestamp to see when the feed was updated last \n\
 # \n\
+############## \n\
+## Version 0.9.1 \n\
+## 2018-09-21 \n\
+############## \n\
+# \n\
+# * Fixed missing Bracket in Code \n\
+# \n\
 # \n\
 # \n\
 ############## \n\
