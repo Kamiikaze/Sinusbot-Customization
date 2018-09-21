@@ -569,6 +569,7 @@ registerPlugin({
 					if (channelName.length >= 40) {
 						channelName = channelName.substring(0,37)+'...';
 					}
+				}
 				
 				var event = require('event');
 				event.on('clientMove', function (ev) {
