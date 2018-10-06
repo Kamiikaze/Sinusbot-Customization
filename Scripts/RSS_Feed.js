@@ -400,7 +400,7 @@ registerPlugin({
 			} else {
 				//var feedSource = data.split('<link')[1].split('application/')[1].split('+')[0];
 				var feedSource = data.split('application/')[1].split('+')[0];
-				engine.log("Test: " + feedSource);
+				//engine.log("Test: " + feedSource); 
 				feedSource = '[/center][right][url=' + feedSource + '][Source][/url][/right]';
 			}
 			
