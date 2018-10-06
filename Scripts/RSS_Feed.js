@@ -1,6 +1,6 @@
 registerPlugin({
 	name: 'RSS Feed',
-	version: '0.9.0',
+	version: '0.9.2',
 	description: 'RSS Feed to channel description',
 	author: 'Reworked by Kamikaze <admin@xKamikaze.de> | Created by Filtik <filtik@gmx.de>',
 	vars: {
@@ -289,7 +289,12 @@ registerPlugin({
 # \n\
 # * Fixed missing Bracket in Code \n\
 # \n\
+############## \n\
+## Version 0.9.2 \n\
+## 2018-09-21 \n\
+############## \n\
 # \n\
+# * Fixed missing details for Atom-Feeds \n\
 # \n\
 ############## \n\
 			'
@@ -387,13 +392,15 @@ registerPlugin({
 			if (URL.match('.rdf')) {
 				var feedSource = data.split('<link>')[1].split('</link>')[0];
 				feedSource = '[/center][right][url=' + feedSource + '][Source][/url][/right]';
-			data = data.split('</description>').slice(1).join('</description>');
+				data = data.split('</description>').slice(1).join('</description>');
 			} else if (data.match('<channel>')) {
 				var feedSource = data.split('<channel>').pop().split('</channel>').shift().split('<link>')[1].split('</link>')[0];
 				feedSource = '[/center][right][url=' + feedSource + '][Source][/url][/right]';
 			data = data.split('</description>').slice(1).join('</description>');
 			} else {
-				var feedSource = data.split('<link')[1].split('application/')[1].split('+')[0];
+				//var feedSource = data.split('<link')[1].split('application/')[1].split('+')[0];
+				var feedSource = data.split('application/')[1].split('+')[0];
+				engine.log("Test: " + feedSource);
 				feedSource = '[/center][right][url=' + feedSource + '][Source][/url][/right]';
 			}
 			
