@@ -1,8 +1,9 @@
 registerPlugin({
 	name: 'RSS Feed',
-	version: '0.9.2',
+	version: '1.0.0',
 	description: 'RSS Feed to channel description',
-	author: 'Reworked by Kamikaze <admin@xKamikaze.de> | Created by Filtik <filtik@gmx.de>',
+	author: 'Created by Kamikaze <admin@xKamikaze.de>',
+	requiredModules: ['http'], 
 	vars: {
 		Language: {
 			name: 'Language',
@@ -297,12 +298,20 @@ registerPlugin({
 # * Fixed missing details for Atom-Feeds \n\
 # \n\
 ############## \n\
+## Version 1.0.0 \n\
+## 2018-09-21 \n\
+############## \n\
+# \n\
+# * Now woring with Sinusbot 1.0.0 \n\
+# \n\
+############## \n\
 			'
 		}
 	}
-},  function(sinusbot, config, info) {
+},	function(sinusbot, config, info) {
 	
-	var engine = require('engine');
+	const engine = require('engine');
+	const http = require('http');
 	var status;
 	var oldstatus = '';
 	var desOutTextIS;
@@ -365,7 +374,7 @@ registerPlugin({
 		var backend = require('backend');
 		var URL = rssarray[x].feedadress;
 		var Channel = rssarray[x].channel;
-		Channel = backend.getChannelByID(Channel);
+		Channel = backend.getChannelByID(86);
 		var HeaderText = rssarray[x].HeaderText;
 		var FeedArray = rssarray[x].FeedArray;
 		var LastFeedasChannelName = rssarray[x].LastFeedasChannelName;
@@ -379,13 +388,14 @@ registerPlugin({
 			ShortDescLength = 100;
 		}
 		
-		sinusbot.http({
+		http.simpleRequest({
 			method: "GET", 
 			url: URL, 
 			timeout: 60000, 
 			headers: [{"Content-Type": "text/plain; charset=UTF-8"}]
 		}, function (error, response) {
-			var data = response.data;
+			//var data = response.data;
+			var data = response.data.toString();
 			data = data.replace(/<!\[CDATA\[/gi, '').replace(/]]>/gi, '');
 			//engine.log(data);
 			
@@ -479,14 +489,16 @@ registerPlugin({
 					
 					var SearchFeedURL = data.substr(findLinkmiddle, findLinkend - findLinkmiddle);
 					var SearchFeedTITLE = data.substr(findtitlemiddle, findtitleend - findtitlemiddle);
+					//engine.log("SearchFeedTITLE: "+SearchFeedTITLE);
 					var SearchFeedDATE = data.substr(findDate, findDateend - findDate);
 					var SearchFeedCREATOR = data.substr(findCreator, findCreatorend - findCreator);
 					var SearchFeedCATEGORY = data.substr(findCategory, findCategoryend - findCategory);
 					var SearchFeedSHORTDESC = data.substr(findShortDesc, findShortDescend - findShortDesc);
-					SearchFeedSHORTDESC = SearchFeedSHORTDESC.replace(/(<([^>]+)>)/ig,"").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '>').replace(/\n\s*\n/g, '\n');
+					SearchFeedSHORTDESC = SearchFeedSHORTDESC.replace(/(<([^>]+)>)/ig,"").replace(/&amp;/g, '&').replace(/&gt;/g, '>').replace(/&lt;/g, '>').replace(/\n\s*\n/g, '\n').replace(/&#034;/gi, '"');
 					if (SearchFeedSHORTDESC.length > ShortDescLength) {
 						SearchFeedSHORTDESC = SearchFeedSHORTDESC.substring(0, ShortDescLength) + '...';
 					}
+					//console.log(SearchFeedSHORTDESC);
 					
 					findEnd = data.indexOf(eforSearch, findEnd)+eforSearch.length;
 					
@@ -525,9 +537,13 @@ registerPlugin({
 					if (typeof FeedArrayTITLE[i].match(/&#/gi) !== 'undefined') {
 						var editVar = '';
 						var findeEnd = 0;
-						for (var z = 0; z < FeedArrayTITLE[i].match(/&#/gi).length; z++) {
+						
+						for (var z = 0; z < FeedArrayTITLE[i].length; z++) {
 							var findedit = FeedArrayTITLE[i].indexOf('&#', findeEnd);
 							var findeditend = FeedArrayTITLE[i].indexOf(';', findedit)+1;
+							//console.log("FeedArrayTITLE[1]: "+FeedArrayTITLE[1]);
+							
+							FeedArrayTITLE[i] = FeedArrayTITLE[i].replace(/&#034;/gi, '"').replace(/&amp;/gi, "&");
 							
 							editVar = editVar + FeedArrayTITLE[i].substr(findeEnd, findedit - findeEnd);
 							
@@ -543,7 +559,8 @@ registerPlugin({
 							
 							findeEnd = findeditend;
 						}
-						FeedArrayTITLE[i] = editVar;
+						//FeedArrayTITLE[i] = editVar;  --- TK Not working!
+						//console.log("#1: "+FeedArrayTITLE[i]);
 					}
 					if (data.search('<item>') > 0) {
 						dateshow = FeedArrayDATE[i].replace(',','').split(' ');
@@ -559,6 +576,7 @@ registerPlugin({
 						var Fyear = dateshow[0];
 					}
 					var refreshedAt = '[center][i][Refreshed: ' + new Date()  + '][/i][/center]';
+					
 										
 					des2OutText = des2OutText + FeedArray.replace('%FeedURL', FeedArrayURL[i]).replace('%FeedTitle', FeedArrayTITLE[i]).replace('%FeedCreator', '[b]' + FeedArrayCREATOR[i] + '[/b]').replace('%FeedTime', Ftime).replace('%FeedCategory', FeedArrayCATEGORY[i]).replace('%FeedShortDesc', FeedArraySHORTDESC[i]);
 					des2OutText = des2OutText.replace('%Feedmonth', Fmonth).replace('%Feedday', Fday).replace('%Feedyear', Fyear);
@@ -578,20 +596,6 @@ registerPlugin({
 						channelName = channelName.substring(0,37)+'...';
 					}
 				}
-				
-				var event = require('event');
-				event.on('clientMove', function (ev) {
-					var msg = 'Test';
-					msg = msg.replace(/%n/g, ev.client.name());
-					if (ev.fromChannel == undefined) {
-						if (config.type == 0) {
-							//ev.client.chat(msg);
-						} else {
-							//ev.client.poke(msg);
-						}
-						return;
-					}
-				});
 				
 				if (des2OutText != des2OutTextIS[x]) {
 					Channel.setDescription(des2OutText + feedSource + refreshedAt);

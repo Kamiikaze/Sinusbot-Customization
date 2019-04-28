@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'ServerGroup Notifications',
-    version: '1.0',
+    version: '2.0',
     description: 'Script will send a custom message/poke to a Usersin configured ServerGroups.',
     author: 'Kamikaze <admin@xKamikaze.de>',
     vars: {
@@ -13,9 +13,6 @@ registerPlugin({
 		aaa_GuestSupportArray: {
 			title: "Guest / Support Notifications",
 			type: "array",
-			conditions: [
-				{ field: 'a_ActiveGuestSupport', value: 0 }
-			]
 			vars: [
 				{
 					name: "GuestChannel",
@@ -47,6 +44,9 @@ registerPlugin({
 					indent: 2,
 					type: "multiline"
 				}
+			],
+			conditions: [
+				{ field: 'a_ActiveGuestSupport', value: 0 }
 			]
 		},
 		z_notifys: {
@@ -69,7 +69,7 @@ registerPlugin({
 					name: "msgtype",
 					title: "Message Type",
 					indent: 2,
-					type: "select"
+					type: "select",
 					options: ["Poke", "Private"]
 				},
 				{
@@ -182,7 +182,7 @@ registerPlugin({
 			}
 					
 			if (ev.toChannel !== undefined) {
-				//engine.log('1') 
+				//engine.log('1')
 				//engine.log('GuestChannel: ' + GuestChannel.id())
 				//engine.log('ev.toChannel: ' + ev.toChannel.id())
 				if (ev.toChannel.id() == GuestChannel.id()) {
@@ -196,7 +196,9 @@ registerPlugin({
 									ev.client.chat(MsgPlaceholder(guestMsg))
 									//Notify Support Group
 									supportGroupID.forEach(function(sugID) {
+										//engine.log("clients: " + clients);
 										var clientsWithGroup = getClientsWithGroup(clients, sugID)
+										//engine.log("clientsWithGroup: " + clientsWithGroup);
 										clientsWithGroup.forEach(function(clWG) {
 											clWG.chat("\n" + MsgPlaceholder(supportMsg))
 										})
