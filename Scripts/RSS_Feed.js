@@ -396,10 +396,11 @@ registerPlugin({
 			} else if (data.match('<channel>')) {
 				var feedSource = data.split('<channel>').pop().split('</channel>').shift().split('<link>')[1].split('</link>')[0];
 				feedSource = '[/center][right][url=' + feedSource + '][Source][/url][/right]';
-			data = data.split('</description>').slice(1).join('</description>');
+				data = data.split('</description>').slice(1).join('</description>');
 			} else {
 				//var feedSource = data.split('<link')[1].split('application/')[1].split('+')[0];
-				var feedSource = data.split('application/')[1].split('+')[0];
+				//var feedSource = data.split('application/')[1].split('+')[0];
+				var feedSource = "Not found";
 				//engine.log("Test: " + feedSource); 
 				feedSource = '[/center][right][url=' + feedSource + '][Source][/url][/right]';
 			}
