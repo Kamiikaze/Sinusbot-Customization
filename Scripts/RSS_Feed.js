@@ -374,7 +374,7 @@ registerPlugin({
 		var backend = require('backend');
 		var URL = rssarray[x].feedadress;
 		var Channel = rssarray[x].channel;
-		Channel = backend.getChannelByID(86);
+		Channel = backend.getChannelByID(Channel);
 		var HeaderText = rssarray[x].HeaderText;
 		var FeedArray = rssarray[x].FeedArray;
 		var LastFeedasChannelName = rssarray[x].LastFeedasChannelName;
