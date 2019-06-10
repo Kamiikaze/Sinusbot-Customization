@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'TwitchStatus Advanced (Custom Overview)',
-    version: '1.1.0',
+    version: '1.1.1',
     description: 'Twitch Status Plugin with advanced Streamer-Overview.',
     author: 'Kamikaze <admin@xKamikaze.de>',
 	requiredModules: ['http'],
@@ -82,13 +82,18 @@ registerPlugin({
 			indent: 0,
 			type: 'string'
 		},
-		x_TwitchArrays: {
+		m_TwitchArrays: {
 			title: "Twitch Users",
 			type: "array",
 			vars: [
 				{
 					name: "TwitchUser",
 					title: "Twitch Username",
+					type: "string"
+				},
+				{
+					name: "TsUser",
+					title: "Teamspeak User UID (Example: gqfsRLZ7doaEsv35pdufFB/dkAM=)",
 					type: "string"
 				},
 				{
@@ -102,6 +107,12 @@ registerPlugin({
 					type: "string"
 				}
 			]
+		},
+		x_StreamerGroup: {
+			title: 'Twitch Streamer "Server Group ID" (Assigned when Live and removed when offline)',
+			name: 'StreamerGroup',
+			indent: 0,
+			type: 'number'
 		},
 		y_RefreshOverview: {
 			title: 'Time (in Minutes) to refresh Overview',
@@ -117,7 +128,8 @@ registerPlugin({
 		},
 		
 	}
-}, function(sinusbot, config) {
+}, function(_, config, meta) {
+	console.log("TwitchStatus Advanced started..")
 	var engine = require('engine')
 	var event = require('event')
 	var backend = require('backend')
@@ -126,11 +138,12 @@ registerPlugin({
 	var SOactive = config.aa_StreamerOverviewActive
 	var SOchannel = config.b_StreamerOverviewChannel
 	var Channel = backend.getChannelByID(SOchannel)
-	var TwitchArray = config.x_TwitchArrays
+	var TwitchArray = config.m_TwitchArrays
 	var TwitchClientID = config.a_TwitchClientID
 	var callbacks = 0
 	var msg = ""
-	
+
+	var StreamerGroup = backend.getServerGroupByID(config.x_StreamerGroup);
 	var DescHeader = config.c_OverviewHeader;
 	var OnlineText = config.d_OnlineFormat;
 	var OfflineText = config.e_OfflineFormat;
@@ -218,12 +231,19 @@ registerPlugin({
 		TwitchArray.forEach(function(Twitch1) {
 			
 			var TwitchUser = Twitch1.TwitchUser
+			var TsUser = Twitch1.TsUser;
 			var Channel = Twitch1.Channel;
 			Channel = backend.getChannelByID(Channel);
 			var ChannelName = Twitch1.ChannelName;
-			
 			var URL = "https://api.twitch.tv/kraken/streams/" + TwitchUser + "?stream_type=live"
-			
+
+			if (TsUser.includes("=")) { // UID
+				TsClient = backend.getClientByUID(TsUser);
+			} else {
+				console.log("UID not found");
+				return;
+			}
+
 			//engine.log("Getting Data for " + TwitchUser)
 			
 			http.simpleRequest({
@@ -244,6 +264,7 @@ registerPlugin({
 							ChannelName = ChannelName.split("]");
 							Channel.setName(ChannelName[0] + "]" + config.g_StatusFormatOffline + ChannelName[1])
 						}
+						TsClient.removeFromServerGroup(StreamerGroup.id());
 						
 					} else {
 						//engine.log(TwitchUser + "Status is Online")
@@ -253,12 +274,13 @@ registerPlugin({
 							ChannelName = ChannelName.split("]");
 							Channel.setName(ChannelName[0] + "]" + config.h_StatusFormatOnline + ChannelName[1])
 						}
+						StreamerGroup.addClientByDatabaseId(TsClient);
 					}
 				}
 			)
 		})
 	}
-	
+
 	refreshOverview();
 	refreshStatus();
 	setInterval(refreshStatus, config.z_RefreshStatus * 60000); // 1 min.
