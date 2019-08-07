@@ -1,6 +1,6 @@
 registerPlugin({
     name: 'TwitchStatus Advanced (Custom Overview)',
-    version: '1.1.1',
+    version: '1.1.2',
     description: 'Twitch Status Plugin with advanced Streamer-Overview.',
     author: 'Kamikaze <admin@xKamikaze.de>',
 	requiredModules: ['http'],
@@ -126,6 +126,16 @@ registerPlugin({
 			indent: 0,
 			type: 'number'
 		},
+		zzz_debugLogging: {
+			title: 'Enables more detailed Logging (Only use it if you run into problems, performance intensive)',
+			name: 'debugLogging',
+			indent: 0,
+			type: 'select',
+			options: [
+				'No',
+				'Yes'
+			]
+		},
 		
 	}
 }, function(_, config, meta) {
@@ -142,17 +152,24 @@ registerPlugin({
 	var TwitchClientID = config.a_TwitchClientID
 	var callbacks = 0
 	var msg = ""
+	var debugLogging = config.zzz_debugLogging
 
 	var StreamerGroup = backend.getServerGroupByID(config.x_StreamerGroup);
 	var DescHeader = config.c_OverviewHeader;
 	var OnlineText = config.d_OnlineFormat;
 	var OfflineText = config.e_OfflineFormat;
 	
+	if(!debugLogging || debugLogging == 0) {
+		debugLogging = 0;
+		console.log("Debug-Logging Disabled")
+	}
+	
 	if (!DescHeader) {
 		DescHeader =	"[center][b][u][size=+4][COLOR=#00aa00]List of Streamers[/COLOR][/size][/u][/b][/center]\n\n";
 	} else {
 		DescHeader = config.c_OverviewHeader;
 	}
+	
 	if (!OnlineText) {
 		OnlineText = 	"[center][b][size=+2][COLOR=#00ff00]%user%[/COLOR][/size][/b][/center] \n" +
 						"[center][size=10][url=%url%]%title%[/url][/size] \n\n" +
@@ -162,6 +179,7 @@ registerPlugin({
 	} else {
 		OnlineText = config.d_OnlineFormat;
 	}
+	
 	if (!OfflineText) {
 		OfflineText =	"[center][b][size=+2][COLOR=#00ff00]%user%[/COLOR][/size][/b][/center] \n" + 
 						"[center]Stream is currently offline! \n" +
@@ -170,12 +188,18 @@ registerPlugin({
 		OfflineText = config.e_OfflineFormat;
 	}
 	
+	function debugLog(msg) {
+		if (debugLogging = 1) {
+			engine.log("DEBUG: "+msg);
+		}
+	}
+	
 	function refreshOverview() {
 		if (SOactive == 0) {
 			engine.log("refreshOverview() starting..")
 			TwitchArray.forEach(function (Twitch) {
 				var twitchUser = Twitch.TwitchUser;
-				//engine.log(TwitchUser)
+				debugLog("Getting Data for User: "+twitchUser);
 		 
 				http.simpleRequest({
 					method: "GET",
@@ -192,12 +216,12 @@ registerPlugin({
 						twitchUrl = "";
 					
 					if (!data.stream) {
-						
+						debugLog("No Data returned: "+data.stream)
 						twitchUrl = "https://www.twitch.tv/" + twitchUser
 						msg += OfflineText;
 						
 					} else {
-						
+						debugLog("Data returned for: "+data.stream.channel.display_name)
 						msg += OnlineText;
 						
 						twitchUser = data.stream.channel.display_name;
@@ -218,7 +242,7 @@ registerPlugin({
 					callbacks++
 					
 					if (callbacks == TwitchArray.length) {
-						//engine.log("Ready");
+						debugLog("Setting Description..");
 						Channel.setDescription(DescHeader + msg);
 					}
 				});
@@ -240,11 +264,11 @@ registerPlugin({
 			if (TsUser.includes("=")) { // UID
 				TsClient = backend.getClientByUID(TsUser);
 			} else {
-				console.log("UID not found");
+				engine.log("UID not found");
 				return;
 			}
 
-			//engine.log("Getting Data for " + TwitchUser)
+			debugLog("Getting Data for " + TwitchUser)
 			
 			http.simpleRequest({
 					method: "GET", 
@@ -255,9 +279,8 @@ registerPlugin({
 					
 					var data = response.data
 					data = JSON.parse(data)
-					//engine.log(config.f_SuffixOrPrefix)
 					if (!data.stream) {
-						//engine.log(TwitchUser + "Status is Offline")
+						debugLog(TwitchUser + " Status is Offline")
 						if (config.f_SuffixOrPrefix == 0) {
 							Channel.setName(ChannelName + config.g_StatusFormatOffline)
 						} else {
@@ -265,9 +288,10 @@ registerPlugin({
 							Channel.setName(ChannelName[0] + "]" + config.g_StatusFormatOffline + ChannelName[1])
 						}
 						TsClient.removeFromServerGroup(StreamerGroup.id());
-						
+						//TODO: Check if Client online
+
 					} else {
-						//engine.log(TwitchUser + "Status is Online")
+						debugLog(TwitchUser + " Status is Online")
 						if (config.f_SuffixOrPrefix == 0) {
 							Channel.setName(ChannelName + config.h_StatusFormatOnline)
 						} else {
@@ -275,6 +299,7 @@ registerPlugin({
 							Channel.setName(ChannelName[0] + "]" + config.h_StatusFormatOnline + ChannelName[1])
 						}
 						StreamerGroup.addClientByDatabaseId(TsClient);
+						//TODO: Check if Client online
 					}
 				}
 			)
