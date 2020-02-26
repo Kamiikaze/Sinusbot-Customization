@@ -147,20 +147,20 @@ registerPlugin({
 
 	}
 }, function (_, config, meta) {
-	console.log("TwitchStatus Advanced started..")
-	var engine = require('engine')
-	var event = require('event')
-	var backend = require('backend')
+	console.log("TwitchStatus Advanced started..");
+	var engine = require('engine');
+	var event = require('event');
+	var backend = require('backend');
 	const http = require('http');
 
-	var SOactive = config.aa_StreamerOverviewActive
-	var SOchannel = config.b_StreamerOverviewChannel
-	var Channel = backend.getChannelByID(SOchannel)
-	var TwitchArray = config.m_TwitchArrays
-	var TwitchClientID = config.a_TwitchClientID
-	var callbacks = 0
-	var msg = ""
-	var debugLogging = config.zzz_debugLogging
+	var SOactive = config.aa_StreamerOverviewActive;
+	var SOchannel = config.b_StreamerOverviewChannel;
+	var Channel = backend.getChannelByID(SOchannel);
+	var TwitchArray = config.m_TwitchArrays;
+	var TwitchClientID = config.a_TwitchClientID;
+	var callbacks = 0;
+	var msg = "";
+	var debugLogging = config.zzz_debugLogging;
 
 	var StreamerGroup = backend.getServerGroupByID(config.x_StreamerGroup);
 	var DescHeader = config.c_OverviewHeader;
@@ -169,7 +169,7 @@ registerPlugin({
 
 	if (!debugLogging || debugLogging == 0) {
 		debugLogging = 0;
-		console.log("Debug-Logging Disabled")
+		console.log("Debug-Logging Disabled");
 	}
 
 	if (!DescHeader) {
@@ -251,14 +251,17 @@ registerPlugin({
 						.replace("%follower%", twitchFollower)
 						.replace("%url%", twitchUrl);
 
-					callbacks++
-
+					callbacks++;
+					debugLog("callback" + callbacks);
+					debugLog("lenght" + TwitchArray.length);
 					if (callbacks == TwitchArray.length) {
 						debugLog("Setting Description..");
 						Channel.setDescription(DescHeader + msg);
 					}
 				});
 			});
+			callbacks = 0;
+			msg = "";
 		}
 	}
 
